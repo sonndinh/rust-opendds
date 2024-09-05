@@ -1,6 +1,3 @@
-// Only for testing
-#include "idl/NodeJSTestTypeSupportImpl.h"
-
 #include "rust-opendds/include/rust-opendds.h"
 #include "rust-opendds/include/DataReaderListenerImpl.h"
 
@@ -130,7 +127,7 @@ std::unique_ptr<DataWriterInfo> create_datawriter(const std::unique_ptr<DDS::Dom
 
   DDS::DataWriterQos dw_qos;
   pub->get_default_datawriter_qos(dw_qos);
-
+xs
   DDS::DataWriter_var dw = pub->create_datawriter(topic, dw_qos, 0, 0);
   if (!dw) {
     throw std::runtime_error("create_datawriter: Failed to create data writer");
@@ -163,6 +160,21 @@ void write(const std::unique_ptr<DataWriterInfo>& dwi_ptr, rust::String sample, 
     vd->delete_value(sample_obj);
     throw std::runtime_error(std::string("C++: Rust_OpenDDS::write: Failed to read JSON sample with type ") + type_name.in());
   }
+
+  // For testing
+  // Wait for association to finish before writing sample.
+  // Otherwise, the reader may not receive it!
+  ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::write: Waiting for matched reader before writing...\n"));
+  DDS::InstanceHandleSeq handles;
+  while (true) {
+    dw->get_matched_subscriptions(handles);
+    if (handles.length() > 0) {
+      ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::write: %d matched subscriptions\n", handles.length()));
+      break;
+    }
+    ACE_OS::sleep(ACE_Time_Value(0, 500000));
+  }
+  // End testing
 
   const DDS::ReturnCode_t rc = vd->write_helper(dw, sample_obj, instance);
   vd->delete_value(sample_obj);

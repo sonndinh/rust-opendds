@@ -29,12 +29,16 @@ fn main() {
     println!("Hello from Rust main");
     let domain_id: i32 = 32;
     ffi::initialize(4, vec!["-DCPSDebugLevel".to_string(),
-                            "3".to_string(),
+                            "1".to_string(),
                             "-DCPSConfigFile".to_string(),
                             "rtps_disc.ini".to_string()]);
-    ffi::load("/Users/sonndinh/Codes/node-opendds/test/idl/NodeJSTest".to_string());
+    ffi::load("/Users/sonndinh/Codes/OpenDDS/examples/DCPS/Messenger_Imr/DDS_Messenger_Imr_Idl".to_string());
     let dp = ffi::create_participant(domain_id);
-    ffi::create_datawriter(&dp, "topic".to_string(), "Mod::Sample".to_string());
-    ffi::subscribe(&dp, "topic".to_string(), "Mod::Sample".to_string());
+    ffi::subscribe(&dp, "topic".to_string(), "Messenger::Message".to_string());
+
+    let dwi = ffi::create_datawriter(&dp, "topic".to_string(), "Messenger::Message".to_string());
+    let sample = r#"{ "from": "Alice", "subject": "Hello from Alice", "subject_id": 0, "text": "Blah blah blah", "count": 2 }"#;
+    ffi::write(&dwi, sample.to_string(), 0);
+
     ffi::delete_participant(dp);
 }
