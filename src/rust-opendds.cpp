@@ -59,7 +59,7 @@ void delete_participant(std::unique_ptr<DDS::DomainParticipant_var> dp_ptr)
   dp->delete_contained_entities();
   dpf_->delete_participant(dp);
   dp_ptr.reset(0);
-  ACE_DEBUG((LM_DEBUG, "C++: OpenDDS::delete_participant\n"));
+  ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::delete_participant\n"));
 }
 
 // TODO: Support custom QoS and call back
@@ -148,27 +148,29 @@ std::unique_ptr<DataWriterInfo> create_datawriter(const std::unique_ptr<DDS::Dom
 void write(const std::unique_ptr<DataWriterInfo>& dwi_ptr, rust::String sample, DDS::InstanceHandle_t instance)
 {
   DDS::DataWriter* const dw = dwi_ptr->dw_ptr;
-  const OpenDDS::DCPS::TypeSupport* const ts = dwi_ptr->ts_ptr;
+  OpenDDS::DCPS::TypeSupport* const ts = dwi_ptr->ts_ptr;
   const OpenDDS::DCPS::ValueDispatcher* const vd = dynamic_cast<const OpenDDS::DCPS::ValueDispatcher* const>(ts);
   if (!vd) {
     throw std::runtime_error("C++: Rust_OpenDDS::write: Failed to get ValueDispatcher");
   }
+
+  CORBA::String_var type_name = ts->get_type_name();
 
   void* sample_obj = vd->new_value();
   rapidjson::StringStream buffer(sample.c_str());
   OpenDDS::DCPS::JsonValueReader<> jvr(buffer);
   if (!vd->read(jvr, sample_obj)) {
     vd->delete_value(sample_obj);
-    throw std::runtime_error(std::string("C++: Rust_OpenDDS::write: Failed to read JSON sample with type ") + ts->name());
+    throw std::runtime_error(std::string("C++: Rust_OpenDDS::write: Failed to read JSON sample with type ") + type_name.in());
   }
 
   const DDS::ReturnCode_t rc = vd->write_helper(dw, sample_obj, instance);
   vd->delete_value(sample_obj);
   if (rc != DDS::RETCODE_OK) {
-    throw std::runtime_error(std::string("C++: Rust_OpenDDS::write: Failed to write sample with type ") + ts->name());
+    throw std::runtime_error(std::string("C++: Rust_OpenDDS::write: Failed to write sample with type ") + type_name.in());
   }
 
-  ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::write sample %C\n", ts->name()));
+  ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::write sample %C\n", type_name.in()));
 }
 
 }

@@ -4,14 +4,18 @@ fn main() {
     let dds_root = env::var("DDS_ROOT").expect("DDS_ROOT environment variable is not defined");
     let ace_root = env::var("ACE_ROOT").expect("ACE_ROOT environment variable is not defined");
     let tao_root = env::var("TAO_ROOT").expect("TAO_ROOT environment variable is not defined");
+    let rapidjson_root = env::var("RAPIDJSON_ROOT").expect("RAPIDJSON_ROOT environment variable is not defined");
+    let rapidjson_include_path = rapidjson_root + "/include";
 
     cxx_build::bridge("src/main.rs")
         .file("src/rust-opendds.cpp")
         .file("src/DataReaderListenerImpl.cpp")
         .flag_if_supported("-std=c++11")
+        .flag_if_supported("-DOPENDDS_RAPIDJSON")
         .include(dds_root.as_str())
         .include(ace_root.as_str())
         .include(tao_root.as_str())
+        .include(rapidjson_include_path.as_str())
         .include("/Users/sonndinh/Codes/node-opendds/test") // only needed for testing
         .compile("cxxbridge-rust-opendds");
 
