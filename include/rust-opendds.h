@@ -1,29 +1,36 @@
+#ifndef OPENDDS_RUST_OPENDDS_H
+#define OPENDDS_RUST_OPENDDS_H
+
 #include "rust/cxx.h"
 
 #include <dds/DCPS/Service_Participant.h>
+#include <dds/DCPS/TypeSupportImpl.h>
 
 #include <memory>
 
-namespace OpenDDS {
+namespace Rust_OpenDDS {
 
-//typedef DDS::DomainParticipant_var DomainParticipantVar;
-
-typedef unsigned int DomainParticipantHandle;
+typedef DDS::DomainParticipant_var DomainParticipantVar;
 
 void initialize(int argc, rust::Vec<rust::String> argv);
 void load(rust::String lib_path);
-//const DDS::DomainParticipant_var& create_participant(int domain_id);
-
-// Return a handle to the actual DomainParticipant object.
-// This type is opaque to the caller. Caller is expected to pass the returned
-// value as-is in the subsequent calls in the domain participant.
-std::unique_ptr<DomainParticipantHandle> create_participant(int domain_id);
-
-//void delete_participant(const DDS::DomainParticipant_var& dp);
-void delete_participant(std::unique_ptr<DomainParticipantHandle> dp_handle);
-void subscribe(const std::unique_ptr<DomainParticipantHandle>& dp_handle,
-               rust::String topic_name, rust::String topic_type);
+std::unique_ptr<DDS::DomainParticipant_var> create_participant(int domain_id);
+void delete_participant(std::unique_ptr<DDS::DomainParticipant_var> dp_ptr);
+void subscribe(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
+               rust::String topic_name, rust::String type_name);
 void unsubscribe();
-void create_datawriter();
-void write();
+
+struct DataWriterInfo {
+  DataWriterInfo() : dw_ptr(0), ts_ptr(0) {}
+
+  DDS::DataWriter* dw_ptr;
+  OpenDDS::DCPS::TypeSupport* ts_ptr;
+};
+
+std::unique_ptr<DataWriterInfo> create_datawriter(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
+                                                    rust::String topic_name, rust::String type_name);
+void write(const std::unique_ptr<DataWriterInfo>& dwi_ptr, rust::String sample,
+           DDS::InstanceHandle_t instance = DDS::HANDLE_NIL);
 }
+
+#endif
