@@ -18,7 +18,6 @@ std::unique_ptr<DDS::DomainParticipant_var> create_participant(int domain_id);
 void delete_participant(std::unique_ptr<DDS::DomainParticipant_var> dp_ptr);
 void subscribe(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
                rust::String topic_name, rust::String type_name);
-void unsubscribe();
 
 struct DataWriterInfo {
   DataWriterInfo() : dw_ptr(0), ts_ptr(0) {}
@@ -29,6 +28,7 @@ struct DataWriterInfo {
 
 std::unique_ptr<DataWriterInfo> create_datawriter(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
                                                     rust::String topic_name, rust::String type_name);
+void wait_for_readers(const std::unique_ptr<DataWriterInfo>& dwi_ptr);
 void write(const std::unique_ptr<DataWriterInfo>& dwi_ptr, rust::String sample,
            DDS::InstanceHandle_t instance = DDS::HANDLE_NIL);
 }

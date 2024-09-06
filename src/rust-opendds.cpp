@@ -87,7 +87,7 @@ void subscribe(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
 
   DDS::DataReaderQos dr_qos;
   sub->get_default_datareader_qos(dr_qos);
-  DataReaderListenerImpl* const drli = new DataReaderListenerImpl;
+  DataReaderListenerImpl* const drli = new DataReaderListenerImpl(ts);
   const DDS::DataReaderListener_var listen(drli);
 
   DDS::DataReader_var dr = sub->create_datareader(topic, dr_qos, listen, DDS::DATA_AVAILABLE_STATUS);
@@ -96,10 +96,6 @@ void subscribe(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
   }
   ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::subscribe: subscribe topic '%C' with type '%C'\n",
              topic_name.c_str(), type_name.c_str()));
-}
-
-void unsubscribe()
-{
 }
 
 std::unique_ptr<DataWriterInfo> create_datawriter(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
@@ -127,7 +123,7 @@ std::unique_ptr<DataWriterInfo> create_datawriter(const std::unique_ptr<DDS::Dom
 
   DDS::DataWriterQos dw_qos;
   pub->get_default_datawriter_qos(dw_qos);
-xs
+
   DDS::DataWriter_var dw = pub->create_datawriter(topic, dw_qos, 0, 0);
   if (!dw) {
     throw std::runtime_error("create_datawriter: Failed to create data writer");
@@ -140,6 +136,20 @@ xs
   ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::create_datawriter for topic '%C' with type '%C'\n",
              topic_name.c_str(), type_name.c_str()));
   return ret;
+}
+
+void wait_for_readers(const std::unique_ptr<DataWriterInfo>& dwi_ptr)
+{
+  ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::wait_for_readers: Waiting for matched readers...\n"));
+  DDS::InstanceHandleSeq handles;
+  while (true) {
+    dwi_ptr->dw_ptr->get_matched_subscriptions(handles);
+    if (handles.length() > 0) {
+      ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::wait_for_readers: %d matched reader(s)\n", handles.length()));
+      break;
+    }
+    ACE_OS::sleep(ACE_Time_Value(0, 500000));
+  }
 }
 
 void write(const std::unique_ptr<DataWriterInfo>& dwi_ptr, rust::String sample, DDS::InstanceHandle_t instance)
@@ -160,21 +170,6 @@ void write(const std::unique_ptr<DataWriterInfo>& dwi_ptr, rust::String sample, 
     vd->delete_value(sample_obj);
     throw std::runtime_error(std::string("C++: Rust_OpenDDS::write: Failed to read JSON sample with type ") + type_name.in());
   }
-
-  // For testing
-  // Wait for association to finish before writing sample.
-  // Otherwise, the reader may not receive it!
-  ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::write: Waiting for matched reader before writing...\n"));
-  DDS::InstanceHandleSeq handles;
-  while (true) {
-    dw->get_matched_subscriptions(handles);
-    if (handles.length() > 0) {
-      ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::write: %d matched subscriptions\n", handles.length()));
-      break;
-    }
-    ACE_OS::sleep(ACE_Time_Value(0, 500000));
-  }
-  // End testing
 
   const DDS::ReturnCode_t rc = vd->write_helper(dw, sample_obj, instance);
   vd->delete_value(sample_obj);

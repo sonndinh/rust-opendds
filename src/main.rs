@@ -1,7 +1,9 @@
+use std::{thread, time};
+
 #[cxx::bridge(namespace = "Rust_OpenDDS")]
 mod ffi {
     extern "Rust" {
-        fn callback();
+        fn rust_callback(sample: String);
     }
 
     unsafe extern "C++" {
@@ -15,14 +17,14 @@ mod ffi {
         fn create_participant(domain_id: i32) -> UniquePtr<DomainParticipantVar>;
         fn delete_participant(dp: UniquePtr<DomainParticipantVar>);
         fn subscribe(dp: &UniquePtr<DomainParticipantVar>, topic_name: String, type_name: String);
-        fn unsubscribe();
         fn create_datawriter(dp: &UniquePtr<DomainParticipantVar>, topic_name: String, type_name: String) -> UniquePtr<DataWriterInfo>;
+        fn wait_for_readers(dwi: &UniquePtr<DataWriterInfo>);
         fn write(dwi: &UniquePtr<DataWriterInfo>, sample: String, instance_handle: i32);
     }
 }
 
-pub fn callback() {
-    println!("Rust: Received a sample");
+pub fn rust_callback(sample: String) {
+    println!("Rust: Received a sample: {}", sample);
 }
 
 fn main() {
@@ -37,8 +39,13 @@ fn main() {
     ffi::subscribe(&dp, "topic".to_string(), "Messenger::Message".to_string());
 
     let dwi = ffi::create_datawriter(&dp, "topic".to_string(), "Messenger::Message".to_string());
+    ffi::wait_for_readers(&dwi);
+
     let sample = r#"{ "from": "Alice", "subject": "Hello from Alice", "subject_id": 0, "text": "Blah blah blah", "count": 2 }"#;
     ffi::write(&dwi, sample.to_string(), 0);
+
+    // Wait for the reader to receive the samples
+    thread::sleep(time::Duration::from_millis(3000));
 
     ffi::delete_participant(dp);
 }
