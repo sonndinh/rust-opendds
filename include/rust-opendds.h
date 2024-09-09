@@ -28,6 +28,8 @@ struct DataWriterInfo {
 
 std::unique_ptr<DataWriterInfo> create_datawriter(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
                                                     rust::String topic_name, rust::String type_name);
+
+// Invoked by writer to wait for readers to join
 void wait_for_readers(const std::unique_ptr<DataWriterInfo>& dwi_ptr);
 void write(const std::unique_ptr<DataWriterInfo>& dwi_ptr, rust::String sample,
            DDS::InstanceHandle_t instance = DDS::HANDLE_NIL);

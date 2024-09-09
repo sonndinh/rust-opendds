@@ -1,5 +1,5 @@
 #include "rust-opendds/include/DataReaderListenerImpl.h"
-#include "rust-opendds/src/main.rs.h"
+#include "rust-opendds/src/lib.rs.h"
 
 #include <dds/DCPS/JsonValueWriter.h>
 

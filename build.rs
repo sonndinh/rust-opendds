@@ -7,7 +7,7 @@ fn main() {
     let rapidjson_root = env::var("RAPIDJSON_ROOT").expect("RAPIDJSON_ROOT environment variable is not defined");
     let rapidjson_include_path = rapidjson_root + "/include";
 
-    cxx_build::bridge("src/main.rs")
+    cxx_build::bridge("src/lib.rs")
         .file("src/rust-opendds.cpp")
         .file("src/DataReaderListenerImpl.cpp")
         .flag_if_supported("-std=c++11")
