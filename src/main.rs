@@ -15,7 +15,7 @@ fn main() {
     let dwi = ffi::create_datawriter(&dp, "topic".to_string(), "Messenger::Message".to_string());
     ffi::wait_for_readers(&dwi);
 
-    let sample = r#"{ "from": "Alice", "subject": "Hello from Alice", "subject_id": 0, "text": "Blah blah blah", "count": 2 }"#;
+    let sample = r#"{ "from": "Alice", "subject": "Hello from Alice", "subject_id": 0, "text": "Wanna play soccer today", "count": 2 }"#;
     ffi::write(&dwi, sample.to_string(), 0);
 
     // Wait for the reader to receive the samples

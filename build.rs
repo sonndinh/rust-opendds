@@ -25,10 +25,8 @@ fn main() {
     println!("cargo:rerun-if-changed=include/DataReaderListenerImpl.h");
     println!("cargo:rustc-link-search={}/lib", dds_root);
     println!("cargo:rustc-link-search={}/lib", ace_root);
-    println!("cargo:rustc-link-search=/Users/sonndinh/Codes/OpenDDS/examples/DCPS/Messenger_Imr");
     println!("cargo:rustc-link-lib=OpenDDS_Dcps");
     println!("cargo:rustc-link-lib=ACE");
     println!("cargo:rustc-link-lib=TAO");
     println!("cargo:rustc-link-lib=TAO_Valuetype");
-    println!("cargo:rustc-link-lib=DDS_Messenger_Imr_Idl");
 }
