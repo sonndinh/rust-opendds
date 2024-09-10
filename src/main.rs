@@ -2,8 +2,12 @@
 use rust_opendds::ffi;
 use std::{thread, time};
 
-fn rust_callback(sample: String) {
-    println!("Rust: Received a sample: {}", sample);
+fn rust_callback(si: ffi::SampleInfo, sample: String) {
+    if si.valid_data {
+        println!("Rust: Received a sample with VALID data: {}", sample);
+    } else {
+        println!("Rust: Received a sample with INVALID data: {}", sample);
+    }
 }
 
 fn main() {
@@ -16,7 +20,7 @@ fn main() {
     ffi::load("/Users/sonndinh/Codes/OpenDDS/examples/DCPS/Messenger_Imr/DDS_Messenger_Imr_Idl".to_string());
     let dp = ffi::create_participant(domain_id);
 
-    let cb: fn(String) = rust_callback;
+    let cb: fn(ffi::SampleInfo, String) = rust_callback;
     ffi::subscribe(&dp, "topic".to_string(), "Messenger::Message".to_string(), cb);
 
     let dwi = ffi::create_datawriter(&dp, "topic".to_string(), "Messenger::Message".to_string());

@@ -39,7 +39,9 @@ void DataReaderListenerImpl::push_back(const DDS::SampleInfo& si, const void* sa
   }
 
   // Invoke the Rust application's callback
-  (*cb_fn_)(buffer.GetString());
+  SampleInfo sample_info;
+  sample_info.valid_data = si.valid_data;
+  (*cb_fn_)(sample_info, buffer.GetString());
 }
 
 }

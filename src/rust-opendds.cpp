@@ -13,10 +13,7 @@
 // TODO:
 // 1. Allow custom QoS when creating DDS entities
 // 2. Handle termination, e.g., delete entities
-// 3. Have a generic callback function for Rust (function pointer?)
-// 4. Reorganize the common binding functions into a library,
-//    and move test code to a separate binary target.
-// 5. (Optional) Simple IDL mapping to Rust:
+// 3. (Optional) Simple IDL mapping to Rust:
 //    IDL struct -> Rust struct
 //    IDL union -> Rust enum
 
@@ -69,7 +66,7 @@ void delete_participant(std::unique_ptr<DDS::DomainParticipant_var> dp_ptr)
 }
 
 void subscribe(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, rust::String topic_name,
-               rust::String type_name, rust::Fn<void(rust::String)> cb_fn)
+               rust::String type_name, rust::Fn<void(SampleInfo, rust::String)> cb_fn)
 {
   DDS::DomainParticipant_var& dp = *dp_ptr;
   OpenDDS::DCPS::TypeSupport* ts = Registered_Data_Types->lookup(dp, type_name.c_str());

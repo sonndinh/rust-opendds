@@ -9,11 +9,13 @@
 
 namespace Rust_OpenDDS {
 
+struct SampleInfo;
+
 class DataReaderListenerImpl
   : public virtual OpenDDS::DCPS::LocalObject<DDS::DataReaderListener>
   , private OpenDDS::DCPS::AbstractSamples {
 public:
-  DataReaderListenerImpl(OpenDDS::DCPS::TypeSupport* ts, rust::Fn<void(rust::String)> cb_fn)
+  DataReaderListenerImpl(OpenDDS::DCPS::TypeSupport* ts, rust::Fn<void(SampleInfo, rust::String)> cb_fn)
     : ts_(ts)
     , cb_fn_(cb_fn)
   {}
@@ -57,7 +59,7 @@ private:
   void push_back(const DDS::SampleInfo& si, const void* sample);
 
   OpenDDS::DCPS::TypeSupport* ts_;
-  rust::Fn<void(rust::String)> cb_fn_;
+  rust::Fn<void(SampleInfo, rust::String)> cb_fn_;
 };
 
 }
