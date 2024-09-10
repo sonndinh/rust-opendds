@@ -1,5 +1,10 @@
+// A simple application that contains both a subscriber and a publisher.
 use rust_opendds::ffi;
 use std::{thread, time};
+
+fn rust_callback(sample: String) {
+    println!("Rust: Received a sample: {}", sample);
+}
 
 fn main() {
     println!("Hello from Rust main");
@@ -10,7 +15,9 @@ fn main() {
                             "rtps_disc.ini".to_string()]);
     ffi::load("/Users/sonndinh/Codes/OpenDDS/examples/DCPS/Messenger_Imr/DDS_Messenger_Imr_Idl".to_string());
     let dp = ffi::create_participant(domain_id);
-    ffi::subscribe(&dp, "topic".to_string(), "Messenger::Message".to_string());
+
+    let cb: fn(String) = rust_callback;
+    ffi::subscribe(&dp, "topic".to_string(), "Messenger::Message".to_string(), cb);
 
     let dwi = ffi::create_datawriter(&dp, "topic".to_string(), "Messenger::Message".to_string());
     ffi::wait_for_readers(&dwi);

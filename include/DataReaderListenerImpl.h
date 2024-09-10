@@ -1,6 +1,8 @@
 #ifndef OPENDDS_DATAREADERLISTENERIMPL_H
 #define OPENDDS_DATAREADERLISTENERIMPL_H
 
+#include "rust/cxx.h"
+
 #include <dds/DCPS/LocalObject.h>
 #include <dds/DCPS/DataReaderImpl.h>
 #include <dds/DdsDcpsSubscriptionC.h>
@@ -11,7 +13,11 @@ class DataReaderListenerImpl
   : public virtual OpenDDS::DCPS::LocalObject<DDS::DataReaderListener>
   , private OpenDDS::DCPS::AbstractSamples {
 public:
-  DataReaderListenerImpl(OpenDDS::DCPS::TypeSupport* ts) : ts_(ts) {}
+  DataReaderListenerImpl(OpenDDS::DCPS::TypeSupport* ts, rust::Fn<void(rust::String)> cb_fn)
+    : ts_(ts)
+    , cb_fn_(cb_fn)
+  {}
+
   ~DataReaderListenerImpl() {}
 
 private:
@@ -51,6 +57,7 @@ private:
   void push_back(const DDS::SampleInfo& si, const void* sample);
 
   OpenDDS::DCPS::TypeSupport* ts_;
+  rust::Fn<void(rust::String)> cb_fn_;
 };
 
 }

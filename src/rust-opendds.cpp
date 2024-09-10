@@ -68,8 +68,8 @@ void delete_participant(std::unique_ptr<DDS::DomainParticipant_var> dp_ptr)
   ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::delete_participant\n"));
 }
 
-void subscribe(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
-               rust::String topic_name, rust::String type_name)
+void subscribe(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, rust::String topic_name,
+               rust::String type_name, rust::Fn<void(rust::String)> cb_fn)
 {
   DDS::DomainParticipant_var& dp = *dp_ptr;
   OpenDDS::DCPS::TypeSupport* ts = Registered_Data_Types->lookup(dp, type_name.c_str());
@@ -95,7 +95,7 @@ void subscribe(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
 
   DDS::DataReaderQos dr_qos;
   sub->get_default_datareader_qos(dr_qos);
-  DataReaderListenerImpl* const drli = new DataReaderListenerImpl(ts);
+  DataReaderListenerImpl* const drli = new DataReaderListenerImpl(ts, cb_fn);
   const DDS::DataReaderListener_var listen(drli);
 
   DDS::DataReader_var dr = sub->create_datareader(topic, dr_qos, listen, DDS::DATA_AVAILABLE_STATUS);

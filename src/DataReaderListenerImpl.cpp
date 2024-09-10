@@ -38,8 +38,8 @@ void DataReaderListenerImpl::push_back(const DDS::SampleInfo& si, const void* sa
     throw std::runtime_error(std::string("C++: DataReaderListenerImpl::push_back: Failed to write JSON sample with type") + type_name.in());
   }
 
-  // Invoke the Rust callback
-  rust_callback(std::string(buffer.GetString()));
+  // Invoke the Rust application's callback
+  (*cb_fn_)(buffer.GetString());
 }
 
 }
