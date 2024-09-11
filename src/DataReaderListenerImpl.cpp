@@ -40,7 +40,20 @@ void DataReaderListenerImpl::push_back(const DDS::SampleInfo& si, const void* sa
 
   // Invoke the Rust application's callback
   SampleInfo sample_info;
+  sample_info.sample_state.value = si.sample_state;
+  sample_info.view_state.value = si.view_state;
+  sample_info.instance_state.value = si.instance_state;
+  sample_info.source_timestamp.sec = si.source_timestamp.sec;
+  sample_info.source_timestamp.nanosec = si.source_timestamp.nanosec;
+  sample_info.instance_handle.value = si.instance_handle;
+  sample_info.publication_handle.value = si.publication_handle;
+  sample_info.disposed_generation_count = si.disposed_generation_count;
+  sample_info.no_writers_generation_count = si.no_writers_generation_count;
+  sample_info.sample_rank = si.sample_rank;
+  sample_info.generation_rank = si.generation_rank;
+  sample_info.absolute_generation_rank = si.absolute_generation_rank;
   sample_info.valid_data = si.valid_data;
+  sample_info.opendds_reserved_publication_seq = si.opendds_reserved_publication_seq;
   (*cb_fn_)(sample_info, buffer.GetString());
 }
 
