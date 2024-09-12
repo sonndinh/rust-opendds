@@ -13,7 +13,8 @@
 // TODO:
 // 1. Allow custom QoS when creating DDS entities
 // 2. Handle termination, e.g., delete entities
-// 3. (Optional) Simple IDL mapping to Rust:
+// 4. Support DDS security
+// 4. (Optional) Simple IDL mapping to Rust:
 //    IDL struct -> Rust struct
 //    IDL union -> Rust enum
 
