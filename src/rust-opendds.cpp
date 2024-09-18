@@ -1,5 +1,6 @@
 #include "rust-opendds/include/rust-opendds.h"
 #include "rust-opendds/include/DataReaderListenerImpl.h"
+#include "rust-opendds/include/QosHelper.h"
 
 #include <dds/DCPS/Registered_Data_Types.h>
 #include <dds/DCPS/Marked_Default_Qos.h>
@@ -14,9 +15,10 @@
 // 1. Allow custom QoS when creating DDS entities
 // 2. Handle termination, e.g., delete entities
 // 4. Support DDS security
-// 4. (Optional) Simple IDL mapping to Rust:
+// 5. (Optional) Simple IDL mapping to Rust:
 //    IDL struct -> Rust struct
 //    IDL union -> Rust enum
+// 6. Rework test: separate processes for pub and sub, etc.
 
 namespace Rust_OpenDDS {
 
@@ -42,11 +44,12 @@ void load(rust::String lib_path)
   ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::load\n"));
 }
 
-std::unique_ptr<DDS::DomainParticipant_var> create_participant(int domain_id)
+std::unique_ptr<DDS::DomainParticipant_var> create_participant(int domain_id, DomainParticipantQos qos, StatusMask mask)
 {
-  DDS::DomainParticipantQos qos;
-  dpf_->get_default_participant_qos(qos);
-  DDS::DomainParticipant_var dp = dpf_->create_participant(domain_id, qos, 0, 0);
+  DDS::DomainParticipantQos dds_qos;
+  to_dds_qos(dds_qos, qos);
+
+  DDS::DomainParticipant_var dp = dpf_->create_participant(domain_id, dds_qos, 0, mask.value);
   if (!dp) {
     throw std::runtime_error("create_participant: create_participant failed");
   }

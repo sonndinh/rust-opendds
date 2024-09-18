@@ -321,6 +321,10 @@ pub mod ffi {
         opendds_reserved_publication_seq: i64
     }
 
+    struct StatusMask {
+        value: u32
+    }
+
     unsafe extern "C++" {
         include!("rust-opendds/include/rust-opendds.h");
 
@@ -329,7 +333,7 @@ pub mod ffi {
 
         fn initialize(argc: i32, argv: Vec<String>);
         fn load(lib_path: String);
-        fn create_participant(domain_id: i32) -> UniquePtr<DomainParticipantVar>;
+        fn create_participant(domain_id: i32, qos: DomainParticipantQos, mask: StatusMask) -> UniquePtr<DomainParticipantVar>;
         fn delete_participant(dp: UniquePtr<DomainParticipantVar>);
         fn subscribe(dp: &UniquePtr<DomainParticipantVar>, topic_name: String,
                      type_name: String, cb_fn: fn(si: SampleInfo, sample: String));

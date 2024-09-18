@@ -10,6 +10,7 @@ fn main() {
     cxx_build::bridge("src/lib.rs")
         .file("src/rust-opendds.cpp")
         .file("src/DataReaderListenerImpl.cpp")
+        .file("src/QosHelper.cpp")
         .flag_if_supported("-std=c++11")
         .flag_if_supported("-DOPENDDS_RAPIDJSON")
         .include(dds_root.as_str())
@@ -19,10 +20,14 @@ fn main() {
         .compile("cxxbridge-rust-opendds");
 
     println!("cargo:rerun-if-changed=src/main.rs");
+    println!("cargo:rerun-if-changed=src/lib.rs");
     println!("cargo:rerun-if-changed=src/rust-opendds.cpp");
     println!("cargo:rerun-if-changed=include/rust-opendds.h");
     println!("cargo:rerun-if-changed=src/DataReaderListenerImpl.cpp");
     println!("cargo:rerun-if-changed=include/DataReaderListenerImpl.h");
+    println!("cargo:rerun-if-changed=src/QosHelper.cpp");
+    println!("cargo:rerun-if-changed=include/QosHelper.h");
+
     println!("cargo:rustc-link-search={}/lib", dds_root);
     println!("cargo:rustc-link-search={}/lib", ace_root);
     println!("cargo:rustc-link-lib=OpenDDS_Dcps");
