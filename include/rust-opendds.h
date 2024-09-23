@@ -12,14 +12,22 @@ namespace Rust_OpenDDS {
 
 struct SampleInfo;
 struct DomainParticipantQos;
+struct SubscriberQos;
 struct StatusMask;
+struct ReturnCode_t;
 
 typedef DDS::DomainParticipant_var DomainParticipantVar;
+typedef DDS::Subscriber_var SubscriberVar;
 
 void initialize(int argc, rust::Vec<rust::String> argv);
 void load(rust::String lib_path);
-std::unique_ptr<DDS::DomainParticipant_var> create_participant(int domain_id, DomainParticipantQos qos, StatusMask mask);
+
+ReturnCode_t get_default_participant_qos(DomainParticipantQos& qos);
+std::unique_ptr<DDS::DomainParticipant_var> create_participant(int domain_id, const DomainParticipantQos& qos, StatusMask mask);
 void delete_participant(std::unique_ptr<DDS::DomainParticipant_var> dp_ptr);
+
+std::unique_ptr<DDS::Subscriber_var> create_subscriber(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, const SubscriberQos& qos, StatusMask mask);
+
 void subscribe(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, rust::String topic_name,
                rust::String type_name, rust::Fn<void(SampleInfo, rust::String)> cb_fn);
 

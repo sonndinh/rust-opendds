@@ -44,7 +44,24 @@ void load(rust::String lib_path)
   ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::load\n"));
 }
 
-std::unique_ptr<DDS::DomainParticipant_var> create_participant(int domain_id, DomainParticipantQos qos, StatusMask mask)
+ReturnCode_t get_default_participant_qos(DomainParticipantQos& qos)
+{
+  if (!dpf_) {
+    throw std::runtime_error("get_default_participant_qos: initialize domain participant factory first!");
+  }
+
+  DDS::DomainParticipantQos dds_qos;
+  const DDS::ReturnCode_t rc = dpf_->get_default_participant_qos(dds_qos);
+  ReturnCode_t ret;
+  ret.value = rc;
+  if (rc == DDS::RETCODE_OK) {
+    to_cxx_qos(qos, dds_qos);
+  }
+
+  return ret;
+}
+
+std::unique_ptr<DDS::DomainParticipant_var> create_participant(int domain_id, const DomainParticipantQos& qos, StatusMask mask)
 {
   DDS::DomainParticipantQos dds_qos;
   to_dds_qos(dds_qos, qos);
@@ -67,6 +84,21 @@ void delete_participant(std::unique_ptr<DDS::DomainParticipant_var> dp_ptr)
   dpf_->delete_participant(dp);
   dp_ptr.reset(0);
   ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::delete_participant\n"));
+}
+
+std::unique_ptr<DDS::Subscriber_var> create_subscriber(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, const SubscriberQos& qos, StatusMask mask)
+{
+  // TODO: Custom Qos
+  DDS::DomainParticipant_var& dp = *dp_ptr;
+  DDS::Subscriber_var sub = dp->create_subscriber(SUBSCRIBER_QOS_DEFAULT, 0, mask.value);
+  if (!sub) {
+    throw std::runtime_error("create_subscriber: create_subscriber failed");
+  }
+
+  // TODO: free the _var object
+  std::unique_ptr<DDS::Subscriber_var> ret(new DDS::Subscriber_var);
+  *ret = sub._retn();
+  return ret;
 }
 
 void subscribe(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, rust::String topic_name,

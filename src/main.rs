@@ -58,7 +58,14 @@ fn main() {
                             "-DCPSConfigFile".to_string(),
                             "rtps_disc.ini".to_string()]);
     ffi::load("/Users/sonndinh/Codes/OpenDDS/examples/DCPS/Messenger_Imr/DDS_Messenger_Imr_Idl".to_string());
-    let dp = ffi::create_participant(domain_id);
+
+    let mut part_qos: ffi::DomainParticipantQos = Default::default();
+    let rc: ffi::ReturnCode_t = ffi::get_default_participant_qos(&mut part_qos);
+    if rc.value != dds::RETCODE_OK {
+        return;
+    }
+
+    let dp = ffi::create_participant(domain_id, part_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
 
     let cb: fn(ffi::SampleInfo, String) = rust_callback;
     ffi::subscribe(&dp, "topic".to_string(), "Messenger::Message".to_string(), cb);

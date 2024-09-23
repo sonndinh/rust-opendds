@@ -1,6 +1,22 @@
 // For constants that don't need to cross the languages
 // i.e. only used on the Rust side.
 pub mod dds {
+    #[allow(non_camel_case_types)]
+    type ReturnCode_t = i32;
+    pub const RETCODE_OK: ReturnCode_t = 0;
+    pub const RETCODE_ERROR: ReturnCode_t = 1;
+    pub const RETCODE_UNSUPPORTED: ReturnCode_t = 2;
+    pub const RETCODE_BAD_PARAMETER: ReturnCode_t = 3;
+    pub const RETCODE_PRECONDITION_NOT_MET: ReturnCode_t = 4;
+    pub const RETCODE_OUT_OF_RESOURCES: ReturnCode_t = 5;
+    pub const RETCODE_NOT_ENABLED: ReturnCode_t = 6;
+    pub const RETCODE_IMMUTABLE_POLICY: ReturnCode_t = 7;
+    pub const RETCODE_INCONSISTENT_POLICY: ReturnCode_t = 8;
+    pub const RETCODE_ALREADY_DELETED: ReturnCode_t = 9;
+    pub const RETCODE_TIMEOUT: ReturnCode_t = 10;
+    pub const RETCODE_NO_DATA: ReturnCode_t = 11;
+    pub const RETCODE_ILLEGAL_OPERATION: ReturnCode_t = 12;
+
     type SampleStateKind = u32;
     pub const READ_SAMPLE_STATE: SampleStateKind = 1u32 << 0;
     pub const NOT_READ_SAMPLE_STATE: SampleStateKind = 1u32 << 1;
@@ -24,15 +40,40 @@ pub mod dds {
     type TypeConsistencyEnforcementQosPolicyKind_t = i16;
     pub const DISALLOW_TYPE_COERCION: TypeConsistencyEnforcementQosPolicyKind_t = 1;
     pub const ALLOW_TYPE_COERCION: TypeConsistencyEnforcementQosPolicyKind_t = 2;
+
+    type StatusKind = u32;
+    pub const INCONSISTENT_TOPIC_STATUS: StatusKind            = 0x0001 << 0;
+    pub const OFFERED_DEADLINE_MISSED_STATUS: StatusKind       = 0x0001 << 1;
+    pub const REQUESTED_DEADLINE_MISSED_STATUS: StatusKind     = 0x0001 << 2;
+    pub const OFFERED_INCOMPATIBLE_QOS_STATUS: StatusKind      = 0x0001 << 5;
+    pub const REQUESTED_INCOMPATIBLE_QOS_STATUS: StatusKind    = 0x0001 << 6;
+    pub const SAMPLE_LOST_STATUS: StatusKind                   = 0x0001 << 7;
+    pub const SAMPLE_REJECTED_STATUS: StatusKind               = 0x0001 << 8;
+    pub const DATA_ON_READERS_STATUS: StatusKind               = 0x0001 << 9;
+    pub const DATA_AVAILABLE_STATUS: StatusKind                = 0x0001 << 10;
+    pub const LIVELINESS_LOST_STATUS: StatusKind               = 0x0001 << 11;
+    pub const LIVELINESS_CHANGED_STATUS: StatusKind            = 0x0001 << 12;
+    pub const PUBLICATION_MATCHED_STATUS: StatusKind           = 0x0001 << 13;
+    pub const SUBSCRIPTION_MATCHED_STATUS: StatusKind          = 0x0001 << 14;
+
+    type StatusMask = u32;
+    pub const ALL_STATUS_MASK: StatusMask = 1u32 << 31;
+    pub const NO_STATUS_MASK: StatusMask = 0;
+    pub const DEFAULT_STATUS_MASK: StatusMask = ALL_STATUS_MASK;
 }
 
 #[cxx::bridge(namespace = "Rust_OpenDDS")]
 pub mod ffi {
+    struct ReturnCode_t {
+        value: i32,
+    }
+
     // Enable Rust application to pass custom Qos
     struct TopicDataQosPolicy {
         value: Vec<u8>, // DDS::OctetSeq
     }
 
+    #[derive(Default)]
     struct UserDataQosPolicy {
         value: Vec<u8>, // DDS::OctetSeq
     }
@@ -201,6 +242,7 @@ pub mod ffi {
         name: Vec<String>, // DDS::StringSeq
     }
 
+    #[derive(Default)]
     struct EntityFactoryQosPolicy {
         autoenable_created_entities: bool,
     }
@@ -258,23 +300,27 @@ pub mod ffi {
         entity_factory: EntityFactoryQosPolicy,
     }
 
+    #[derive(Default)]
     struct Property_t {
         name: String,
         value: String,
         propagate: bool,
     }
 
+    #[derive(Default)]
     struct BinaryProperty_t {
         name: String,
         value: Vec<u8>, // DDS::OctetSeq
         propagate: bool,
     }
 
+    #[derive(Default)]
     struct PropertyQosPolicy {
         value: Vec<Property_t>, // DDS::PropertySeq
         binary_value: Vec<BinaryProperty_t>, // DDS::BinaryPropertySeq
     }
 
+    #[derive(Default)]
     struct DomainParticipantQos {
         user_data: UserDataQosPolicy,
         entity_factory: EntityFactoryQosPolicy,
@@ -329,12 +375,18 @@ pub mod ffi {
         include!("rust-opendds/include/rust-opendds.h");
 
         type DomainParticipantVar;
+        type SubscriberVar;
         type DataWriterInfo;
 
         fn initialize(argc: i32, argv: Vec<String>);
         fn load(lib_path: String);
-        fn create_participant(domain_id: i32, qos: DomainParticipantQos, mask: StatusMask) -> UniquePtr<DomainParticipantVar>;
+
+        fn get_default_participant_qos(qos: &mut DomainParticipantQos) -> ReturnCode_t;
+        fn create_participant(domain_id: i32, qos: &DomainParticipantQos, mask: StatusMask) -> UniquePtr<DomainParticipantVar>;
         fn delete_participant(dp: UniquePtr<DomainParticipantVar>);
+
+        fn create_subscriber(dp: &UniquePtr<DomainParticipantVar>, qos: &SubscriberQos, mask: StatusMask) -> UniquePtr<SubscriberVar>;
+
         fn subscribe(dp: &UniquePtr<DomainParticipantVar>, topic_name: String,
                      type_name: String, cb_fn: fn(si: SampleInfo, sample: String));
         fn create_datawriter(dp: &UniquePtr<DomainParticipantVar>, topic_name: String, type_name: String) -> UniquePtr<DataWriterInfo>;
