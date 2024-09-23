@@ -40,4 +40,42 @@ void to_dds_qos(DDS::DomainParticipantQos& dds_qos, const Rust_OpenDDS::DomainPa
 
 void to_cxx_qos(Rust_OpenDDS::DomainParticipantQos& cxx_qos, const DDS::DomainParticipantQos& dds_qos)
 {
+  {
+    const CORBA::ULong len = dds_qos.user_data.value.length();
+    cxx_qos.user_data.value.reserve(len);
+    for (CORBA::ULong i = 0; i < len; ++i) {
+      cxx_qos.user_data.value.push_back(dds_qos.user_data.value[i]);
+    }
+  }
+
+  cxx_qos.entity_factory.autoenable_created_entities = dds_qos.entity_factory.autoenable_created_entities;
+
+  {
+    const CORBA::ULong len = dds_qos.property.value.length();
+    cxx_qos.property.value.reserve(len);
+    for (CORBA::ULong i = 0; i < len; ++i) {
+      Rust_OpenDDS::Property_t tmp;
+      tmp.name = rust::String(dds_qos.property.value[i].name);
+      tmp.value = rust::String(dds_qos.property.value[i].value);
+      tmp.propagate = dds_qos.property.value[i].propagate;
+      cxx_qos.property.value.push_back(tmp);
+    }
+  }
+
+  {
+    const CORBA::ULong len = dds_qos.property.binary_value.length();
+    cxx_qos.property.binary_value.reserve(len);
+    for (CORBA::ULong i = 0; i < len; ++i) {
+      Rust_OpenDDS::BinaryProperty_t tmp;
+      tmp.name = rust::String(dds_qos.property.binary_value[i].name);
+      const CORBA::ULong bin_len = dds_qos.property.binary_value[i].value.length();
+      tmp.value.reserve(bin_len);
+      for (CORBA::ULong j = 0; j < bin_len; ++j) {
+        tmp.value.push_back(dds_qos.property.binary_value[i].value[j]);
+      }
+      tmp.propagate = dds_qos.property.binary_value[i].propagate;
+
+      cxx_qos.property.binary_value.push_back(tmp);
+    }
+  }
 }
