@@ -60,21 +60,21 @@ fn main() {
     ffi::load("/Users/sonndinh/Codes/OpenDDS/examples/DCPS/Messenger_Imr/DDS_Messenger_Imr_Idl".to_string());
 
     let mut part_qos: ffi::DomainParticipantQos = Default::default();
-    let rc: ffi::ReturnCode_t = ffi::get_default_participant_qos(&mut part_qos);
+    let mut rc: ffi::ReturnCode_t = ffi::get_default_participant_qos(&mut part_qos);
     if rc.value != dds::RETCODE_OK {
         return;
     }
 
-    let dp = ffi::create_participant(domain_id, part_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
+    let dp = ffi::create_participant(domain_id, &part_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
 
-    let mut sub_qos: ffi::SubscriberQos;
+    let mut sub_qos: ffi::SubscriberQos = Default::default();
     rc = ffi::get_default_subscriber_qos(&dp, &mut sub_qos);
     if rc.value != dds::RETCODE_OK {
         return;
     }
 
     // Not used now, just for testing.
-    let sub_ = ffi::create_subscriber(&dp, sub_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
+    let _sub = ffi::create_subscriber(&dp, &sub_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
 
     let cb: fn(ffi::SampleInfo, String) = rust_callback;
     ffi::subscribe(&dp, "topic".to_string(), "Messenger::Message".to_string(), cb);

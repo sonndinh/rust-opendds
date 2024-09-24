@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-{
+namespace {
   DDS::PresentationQosPolicyAccessScopeKind
     to_dds_PresentationQosPolicyAccessScopeKind(const Rust_OpenDDS::PresentationQosPolicyAccessScopeKind& kind)
   {

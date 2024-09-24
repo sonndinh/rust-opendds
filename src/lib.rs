@@ -78,6 +78,7 @@ pub mod ffi {
         value: Vec<u8>, // DDS::OctetSeq
     }
 
+    #[derive(Default)]
     struct GroupDataQosPolicy {
         value: Vec<u8>, // DDS::OctetSeq
     }
@@ -232,12 +233,14 @@ pub mod ffi {
         GROUP_PRESENTATION_QOS,
     }
 
+    #[derive(Default)]
     struct PresentationQosPolicy {
         access_scope: PresentationQosPolicyAccessScopeKind,
         coherent_access: bool,
         ordered_access: bool,
     }
 
+    #[derive(Default)]
     struct PartitionQosPolicy {
         name: Vec<String>, // DDS::StringSeq
     }
@@ -289,6 +292,7 @@ pub mod ffi {
         type_consistency: TypeConsistencyEnforcementQosPolicy,
     }
 
+    #[derive(Default)]
     struct SubscriberQos {
         presentation: PresentationQosPolicy,
         partition: PartitionQosPolicy,
@@ -393,5 +397,12 @@ pub mod ffi {
         fn create_datawriter(dp: &UniquePtr<DomainParticipantVar>, topic_name: String, type_name: String) -> UniquePtr<DataWriterInfo>;
         fn wait_for_readers(dwi: &UniquePtr<DataWriterInfo>);
         fn write(dwi: &UniquePtr<DataWriterInfo>, sample: String, instance_handle: i32);
+    }
+}
+
+impl Default for ffi::PresentationQosPolicyAccessScopeKind {
+    fn default() -> Self
+    {
+        ffi::PresentationQosPolicyAccessScopeKind::INSTANCE_PRESENTATION_QOS
     }
 }
