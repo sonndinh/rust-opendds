@@ -385,6 +385,7 @@ pub mod ffi {
         fn create_participant(domain_id: i32, qos: &DomainParticipantQos, mask: StatusMask) -> UniquePtr<DomainParticipantVar>;
         fn delete_participant(dp: UniquePtr<DomainParticipantVar>);
 
+        fn get_default_subscriber_qos(dp: &UniquePtr<DomainParticipantVar>, qos: &mut SubscriberQos) -> ReturnCode_t;
         fn create_subscriber(dp: &UniquePtr<DomainParticipantVar>, qos: &SubscriberQos, mask: StatusMask) -> UniquePtr<SubscriberVar>;
 
         fn subscribe(dp: &UniquePtr<DomainParticipantVar>, topic_name: String,

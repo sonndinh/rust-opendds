@@ -67,6 +67,15 @@ fn main() {
 
     let dp = ffi::create_participant(domain_id, part_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
 
+    let mut sub_qos: ffi::SubscriberQos;
+    rc = ffi::get_default_subscriber_qos(&dp, &mut sub_qos);
+    if rc.value != dds::RETCODE_OK {
+        return;
+    }
+
+    // Not used now, just for testing.
+    let sub_ = ffi::create_subscriber(&dp, sub_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
+
     let cb: fn(ffi::SampleInfo, String) = rust_callback;
     ffi::subscribe(&dp, "topic".to_string(), "Messenger::Message".to_string(), cb);
 
