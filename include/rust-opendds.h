@@ -12,26 +12,45 @@ namespace Rust_OpenDDS {
 
 struct SampleInfo;
 struct DomainParticipantQos;
+struct TopicQos;
 struct SubscriberQos;
 struct StatusMask;
 struct ReturnCode_t;
 
 typedef DDS::DomainParticipant_var DomainParticipantVar;
+typedef DDS::Topic_var TopicVar;
 typedef DDS::Subscriber_var SubscriberVar;
 
 void initialize(int argc, rust::Vec<rust::String> argv);
 void load(rust::String lib_path);
 
+// Domain participant functions
 ReturnCode_t get_default_participant_qos(DomainParticipantQos& qos);
-std::unique_ptr<DDS::DomainParticipant_var> create_participant(int domain_id, const DomainParticipantQos& qos, StatusMask mask);
+
+std::unique_ptr<DDS::DomainParticipant_var>
+create_participant(int domain_id, const DomainParticipantQos& qos, StatusMask mask);
+
 void delete_participant(std::unique_ptr<DDS::DomainParticipant_var> dp_ptr);
 
-ReturnCode_t get_default_subscriber_qos(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, SubscriberQos& qos);
-std::unique_ptr<DDS::Subscriber_var> create_subscriber(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, const SubscriberQos& qos, StatusMask mask);
+// Topic functions
+ReturnCode_t
+get_default_topic_qos(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, TopicQos& qos);
+
+std::unique_ptr<DDS::Topic_var>
+create_topic(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, rust::String topic_name,
+             rust::String type_name, const TopicQos& qos, StatusMask mask);
+
+// Subscriber functions
+ReturnCode_t
+get_default_subscriber_qos(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, SubscriberQos& qos);
+
+std::unique_ptr<DDS::Subscriber_var>
+create_subscriber(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, const SubscriberQos& qos, StatusMask mask);
 
 void subscribe(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, rust::String topic_name,
                rust::String type_name, rust::Fn<void(SampleInfo, rust::String)> cb_fn);
 
+// Publisher functions
 struct DataWriterInfo {
   DataWriterInfo() : dw_ptr(0), ts_ptr(0) {}
 
@@ -39,8 +58,9 @@ struct DataWriterInfo {
   OpenDDS::DCPS::TypeSupport* ts_ptr;
 };
 
-std::unique_ptr<DataWriterInfo> create_datawriter(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
-                                                    rust::String topic_name, rust::String type_name);
+std::unique_ptr<DataWriterInfo>
+create_datawriter(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
+                  rust::String topic_name, rust::String type_name);
 
 // Invoked by writer to wait for readers to join
 void wait_for_readers(const std::unique_ptr<DataWriterInfo>& dwi_ptr);

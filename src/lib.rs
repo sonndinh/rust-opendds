@@ -380,6 +380,7 @@ pub mod ffi {
 
         type DomainParticipantVar;
         type SubscriberVar;
+        type TopicVar;
         type DataWriterInfo;
 
         fn initialize(argc: i32, argv: Vec<String>);
@@ -389,11 +390,15 @@ pub mod ffi {
         fn create_participant(domain_id: i32, qos: &DomainParticipantQos, mask: StatusMask) -> UniquePtr<DomainParticipantVar>;
         fn delete_participant(dp: UniquePtr<DomainParticipantVar>);
 
+        fn get_default_topic_qos(dp: &UniquePtr<DomainParticipantVar>, qos: &mut TopicQos) -> ReturnCode_t;
+        fn create_topic(dp: &UniquePtr<DomainParticipantVar>, topic_name: String, type_name: String, qos: &TopicQos, mask: StatusMask) -> UniquePtr<TopicVar>;
+
         fn get_default_subscriber_qos(dp: &UniquePtr<DomainParticipantVar>, qos: &mut SubscriberQos) -> ReturnCode_t;
         fn create_subscriber(dp: &UniquePtr<DomainParticipantVar>, qos: &SubscriberQos, mask: StatusMask) -> UniquePtr<SubscriberVar>;
 
         fn subscribe(dp: &UniquePtr<DomainParticipantVar>, topic_name: String,
                      type_name: String, cb_fn: fn(si: SampleInfo, sample: String));
+
         fn create_datawriter(dp: &UniquePtr<DomainParticipantVar>, topic_name: String, type_name: String) -> UniquePtr<DataWriterInfo>;
         fn wait_for_readers(dwi: &UniquePtr<DataWriterInfo>);
         fn write(dwi: &UniquePtr<DataWriterInfo>, sample: String, instance_handle: i32);

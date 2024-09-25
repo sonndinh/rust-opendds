@@ -85,6 +85,52 @@ void delete_participant(std::unique_ptr<DDS::DomainParticipant_var> dp_ptr)
   ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::delete_participant\n"));
 }
 
+ReturnCode_t
+get_default_topic_qos(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, TopicQos& qos)
+{
+  DDS::DomainParticipant_var& dp = *dp_ptr;
+  if (!dp) {
+    throw std::runtime_error("get_default_topic_qos: domain participant is nil!");
+  }
+
+  DDS::TopicQos dds_qos;
+  const DDS::ReturnCode_t rc = dp->get_default_topic_qos(dds_qos);
+  ReturnCode_t ret;
+  ret.value = rc;
+  if (rc == DDS::RETCODE_OK) {
+    to_cxx_qos(qos, dds_qos);
+  }
+  return ret;
+}
+
+std::unique_ptr<DDS::Topic_var>
+create_topic(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, rust::String topic_name,
+             rust::String type_name, const TopicQos& qos, StatusMask mask)
+{
+  DDS::DomainParticipant_var& dp = *dp_ptr;
+  OpenDDS::DCPS::TypeSupport* ts = Registered_Data_Types->lookup(dp, type_name.c_str());
+  if (!ts) {
+    ts = Registered_Data_Types->lookup(0, type_name.c_str());
+    if (!ts) {
+      throw std::runtime_error(std::string("create_topic: type ") + type_name.c_str() + " is not registered");
+    }
+    Registered_Data_Types->register_type(dp, type_name.c_str(), ts);
+  }
+
+  DDS::TopicQos topic_qos;
+  to_dds_qos(topic_qos, qos);
+  DDS::Topic_var topic = dp->create_topic(topic_name.c_str(), type_name.c_str(),
+                                          topic_qos, 0, mask.value);
+  if (!topic) {
+    throw std::runtime_error(std::string("create_topic: create topic ") + topic_name.c_str() + " failed");
+  }
+
+  // TODO: free the _var object
+  std::unique_ptr<DDS::Topic_var> ret(new DDS::Topic_var);
+  *ret = topic._retn();
+  return ret;
+}
+
 ReturnCode_t get_default_subscriber_qos(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, SubscriberQos& qos)
 {
   DDS::DomainParticipant_var& dp = *dp_ptr;
@@ -102,7 +148,8 @@ ReturnCode_t get_default_subscriber_qos(const std::unique_ptr<DDS::DomainPartici
   return ret;
 }
 
-std::unique_ptr<DDS::Subscriber_var> create_subscriber(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, const SubscriberQos& qos, StatusMask mask)
+std::unique_ptr<DDS::Subscriber_var>
+create_subscriber(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, const SubscriberQos& qos, StatusMask mask)
 {
   DDS::SubscriberQos sub_qos;
   to_dds_qos(sub_qos, qos);
