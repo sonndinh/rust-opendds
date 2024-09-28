@@ -124,26 +124,64 @@ void to_cxx_qos(Rust_OpenDDS::DurabilityServiceQosPolicy& cxx_qos, const DDS::Du
 
 void to_dds_qos(DDS::DeadlineQosPolicy& dds_qos, const Rust_OpenDDS::DeadlineQosPolicy& cxx_qos)
 {
+  to_dds_qos(dds_qos.period, cxx_qos.period);
 }
 
 void to_cxx_qos(Rust_OpenDDS::DeadlineQosPolicy& cxx_qos, const DDS::DeadlineQosPolicy& dds_qos)
 {
+  to_cxx_qos(cxx_qos.period, dds_qos.period);
 }
 
 void to_dds_qos(DDS::LatencyBudgetQosPolicy& dds_qos, const Rust_OpenDDS::LatencyBudgetQosPolicy& cxx_qos)
 {
+  to_dds_qos(dds_qos.duration, cxx_qos.duration);
 }
 
 void to_cxx_qos(Rust_OpenDDS::LatencyBudgetQosPolicy& cxx_qos, const DDS::LatencyBudgetQosPolicy& dds_qos)
 {
+  to_cxx_qos(cxx_qos.duration, dds_qos.duration);
+}
+
+void to_dds_qos(DDS::LivelinessQosPolicyKind& dds_qos, const Rust_OpenDDS::LivelinessQosPolicyKind& cxx_qos)
+{
+  switch (cxx_qos) {
+  case Rust_OpenDDS::LivelinessQosPolicyKind::AUTOMATIC_LIVELINESS_QOS:
+    dds_qos = DDS::LivelinessQosPolicyKind::AUTOMATIC_LIVELINESS_QOS;
+    break;
+  case Rust_OpenDDS::LivelinessQosPolicyKind::MANUAL_BY_PARTICIPANT_LIVELINESS_QOS:
+    dds_qos = DDS::LivelinessQosPolicyKind::MANUAL_BY_PARTICIPANT_LIVELINESS_QOS;
+    break;
+  default:
+    dds_qos = DDS::LivelinessQosPolicyKind::MANUAL_BY_TOPIC_LIVELINESS_QOS;
+    break;
+  }
+}
+
+void to_cxx_qos(Rust_OpenDDS::LivelinessQosPolicyKind& cxx_qos, const DDS::LivelinessQosPolicyKind& dds_qos)
+{
+  switch (dds_qos) {
+  case DDS::LivelinessQosPolicyKind::AUTOMATIC_LIVELINESS_QOS:
+    cxx_qos = Rust_OpenDDS::LivelinessQosPolicyKind::AUTOMATIC_LIVELINESS_QOS;
+    break;
+  case DDS::LivelinessQosPolicyKind::MANUAL_BY_PARTICIPANT_LIVELINESS_QOS:
+    cxx_qos = Rust_OpenDDS::LivelinessQosPolicyKind::MANUAL_BY_PARTICIPANT_LIVELINESS_QOS;
+    break;
+  default:
+    cxx_qos = Rust_OpenDDS::LivelinessQosPolicyKind::MANUAL_BY_TOPIC_LIVELINESS_QOS;
+    break;
+  }
 }
 
 void to_dds_qos(DDS::LivelinessQosPolicy& dds_qos, const Rust_OpenDDS::LivelinessQosPolicy& cxx_qos)
 {
+  to_dds_qos(dds_qos.kind, cxx_qos.kind);
+  to_dds_qos(dds_qos.lease_duration, cxx_qos.lease_duration);
 }
 
 void to_cxx_qos(Rust_OpenDDS::LivelinessQosPolicy& cxx_qos, const DDS::LivelinessQosPolicy& dds_qos)
 {
+  to_cxx_qos(cxx_qos.kind, dds_qos.kind);
+  to_cxx_qos(cxx_qos.lease_duration, dds_qos.lease_duration);
 }
 
 void to_dds_qos(DDS::ReliabilityQosPolicy& dds_qos, const Rust_OpenDDS::ReliabilityQosPolicy& cxx_qos)
