@@ -539,6 +539,68 @@ void to_cxx_qos(Rust_OpenDDS::GroupDataQosPolicy& cxx_qos, const DDS::GroupDataQ
   to_cxx_value(cxx_qos.value, dds_qos.value);
 }
 
+void to_dds_qos(DDS::TimeBasedFilterQosPolicy& dds_qos, const Rust_OpenDDS::TimeBasedFilterQosPolicy& cxx_qos)
+{
+  to_dds_qos(dds_qos.minimum_separation, cxx_qos.minimum_separation);
+}
+
+void to_cxx_qos(Rust_OpenDDS::TimeBasedFilterQosPolicy& cxx_qos, const DDS::TimeBasedFilterQosPolicy& dds_qos)
+{
+  to_cxx_qos(cxx_qos.minimum_separation, dds_qos.minimum_separation);
+}
+
+void to_dds_qos(DDS::ReaderDataLifecycleQosPolicy& dds_qos, const Rust_OpenDDS::ReaderDataLifecycleQosPolicy& cxx_qos)
+{
+  to_dds_qos(dds_qos.autopurge_nowriter_samples_delay, cxx_qos.autopurge_nowriter_samples_delay);
+  to_dds_qos(dds_qos.autopurge_disposed_samples_delay, cxx_qos.autopurge_disposed_samples_delay);
+}
+
+void to_cxx_qos(Rust_OpenDDS::ReaderDataLifecycleQosPolicy& cxx_qos, const DDS::ReaderDataLifecycleQosPolicy& dds_qos)
+{
+  to_cxx_qos(cxx_qos.autopurge_nowriter_samples_delay, dds_qos.autopurge_nowriter_samples_delay);
+  to_cxx_qos(cxx_qos.autopurge_disposed_samples_delay, dds_qos.autopurge_disposed_samples_delay);
+}
+
+void to_dds_qos(DDS::TypeConsistencyEnforcementQosPolicy& dds_qos, const Rust_OpenDDS::TypeConsistencyEnforcementQosPolicy& cxx_qos)
+{
+  dds_qos.kind = cxx_qos.kind;
+  dds_qos.ignore_sequence_bounds = cxx_qos.ignore_sequence_bounds;
+  dds_qos.ignore_string_bounds = cxx_qos.ignore_string_bounds;
+  dds_qos.ignore_member_names = cxx_qos.ignore_member_names;
+  dds_qos.prevent_type_widening = cxx_qos.prevent_type_widening;
+  dds_qos.force_type_validation = cxx_qos.force_type_validation;
+}
+
+void to_cxx_qos(Rust_OpenDDS::TypeConsistencyEnforcementQosPolicy& cxx_qos, const DDS::TypeConsistencyEnforcementQosPolicy& dds_qos)
+{
+  cxx_qos.kind = dds_qos.kind;
+  cxx_qos.ignore_sequence_bounds = dds_qos.ignore_sequence_bounds;
+  cxx_qos.ignore_string_bounds = dds_qos.ignore_string_bounds;
+  cxx_qos.ignore_member_names = dds_qos.ignore_member_names;
+  cxx_qos.prevent_type_widening = dds_qos.prevent_type_widening;
+  cxx_qos.force_type_validation = dds_qos.force_type_validation;
+}
+
+void to_dds_qos(DDS::OwnershipStrengthQosPolicy& dds_qos, const Rust_OpenDDS::OwnershipStrengthQosPolicy& cxx_qos)
+{
+  dds_qos.value = cxx_qos.value;
+}
+
+void to_cxx_qos(Rust_OpenDDS::OwnershipStrengthQosPolicy& cxx_qos, const DDS::OwnershipStrengthQosPolicy& dds_qos)
+{
+  cxx_qos.value = dds_qos.value;
+}
+
+void to_dds_qos(DDS::WriterDataLifecycleQosPolicy& dds_qos, const Rust_OpenDDS::WriterDataLifecycleQosPolicy& cxx_qos)
+{
+  dds_qos.autodispose_unregistered_instances = cxx_qos.autodispose_unregistered_instances;
+}
+
+void to_cxx_qos(Rust_OpenDDS::WriterDataLifecycleQosPolicy& cxx_qos, const DDS::WriterDataLifecycleQosPolicy& dds_qos)
+{
+  cxx_qos.autodispose_unregistered_instances = dds_qos.autodispose_unregistered_instances;
+}
+
 } // namespace anonymous
 
 void to_dds_qos(DDS::DomainParticipantQos& dds_qos, const Rust_OpenDDS::DomainParticipantQos& cxx_qos)
@@ -553,22 +615,6 @@ void to_cxx_qos(Rust_OpenDDS::DomainParticipantQos& cxx_qos, const DDS::DomainPa
   to_cxx_qos(cxx_qos.user_data, dds_qos.user_data);
   to_cxx_qos(cxx_qos.entity_factory, dds_qos.entity_factory);
   to_cxx_qos(cxx_qos.property, dds_qos.property);
-}
-
-void to_dds_qos(DDS::SubscriberQos& dds_qos, const Rust_OpenDDS::SubscriberQos& cxx_qos)
-{
-  to_dds_qos(dds_qos.presentation, cxx_qos.presentation);
-  to_dds_qos(dds_qos.partition, cxx_qos.partition);
-  to_dds_qos(dds_qos.group_data, cxx_qos.group_data);
-  to_dds_qos(dds_qos.entity_factory, cxx_qos.entity_factory);
-}
-
-void to_cxx_qos(Rust_OpenDDS::SubscriberQos& cxx_qos, const DDS::SubscriberQos& dds_qos)
-{
-  to_cxx_qos(cxx_qos.presentation, dds_qos.presentation);
-  to_cxx_qos(cxx_qos.partition, dds_qos.partition);
-  to_cxx_qos(cxx_qos.group_data, dds_qos.group_data);
-  to_cxx_qos(cxx_qos.entity_factory, dds_qos.entity_factory);
 }
 
 void to_dds_qos(DDS::TopicQos& dds_qos, const Rust_OpenDDS::TopicQos& cxx_qos)
@@ -604,5 +650,113 @@ void to_cxx_qos(Rust_OpenDDS::TopicQos& cxx_qos, const DDS::TopicQos& dds_qos)
   to_cxx_qos(cxx_qos.transport_priority, dds_qos.transport_priority);
   to_cxx_qos(cxx_qos.lifespan, dds_qos.lifespan);
   to_cxx_qos(cxx_qos.ownership, dds_qos.ownership);
+  to_cxx_qos(cxx_qos.representation, dds_qos.representation);
+}
+
+void to_dds_qos(DDS::SubscriberQos& dds_qos, const Rust_OpenDDS::SubscriberQos& cxx_qos)
+{
+  to_dds_qos(dds_qos.presentation, cxx_qos.presentation);
+  to_dds_qos(dds_qos.partition, cxx_qos.partition);
+  to_dds_qos(dds_qos.group_data, cxx_qos.group_data);
+  to_dds_qos(dds_qos.entity_factory, cxx_qos.entity_factory);
+}
+
+void to_cxx_qos(Rust_OpenDDS::SubscriberQos& cxx_qos, const DDS::SubscriberQos& dds_qos)
+{
+  to_cxx_qos(cxx_qos.presentation, dds_qos.presentation);
+  to_cxx_qos(cxx_qos.partition, dds_qos.partition);
+  to_cxx_qos(cxx_qos.group_data, dds_qos.group_data);
+  to_cxx_qos(cxx_qos.entity_factory, dds_qos.entity_factory);
+}
+
+void to_dds_qos(DDS::DataReaderQos& dds_qos, const Rust_OpenDDS::DataReaderQos& cxx_qos)
+{
+  to_dds_qos(dds_qos.durability, cxx_qos.durability);
+  to_dds_qos(dds_qos.deadline, cxx_qos.deadline);
+  to_dds_qos(dds_qos.latency_budget, cxx_qos.latency_budget);
+  to_dds_qos(dds_qos.liveliness, cxx_qos.liveliness);
+  to_dds_qos(dds_qos.reliability, cxx_qos.reliability);
+  to_dds_qos(dds_qos.destination_order, cxx_qos.destination_order);
+  to_dds_qos(dds_qos.history, cxx_qos.history);
+  to_dds_qos(dds_qos.resource_limits, cxx_qos.resource_limits);
+  to_dds_qos(dds_qos.user_data, cxx_qos.user_data);
+  to_dds_qos(dds_qos.ownership, cxx_qos.ownership);
+  to_dds_qos(dds_qos.time_based_filter, cxx_qos.time_based_filter);
+  to_dds_qos(dds_qos.reader_data_lifecycle, cxx_qos.reader_data_lifecycle);
+  to_dds_qos(dds_qos.representation, cxx_qos.representation);
+  to_dds_qos(dds_qos.type_consistency, cxx_qos.type_consistency);
+}
+
+void to_cxx_qos(Rust_OpenDDS::DataReaderQos& cxx_qos, const DDS::DataReaderQos& dds_qos)
+{
+  to_cxx_qos(cxx_qos.durability, dds_qos.durability);
+  to_cxx_qos(cxx_qos.deadline, dds_qos.deadline);
+  to_cxx_qos(cxx_qos.latency_budget, dds_qos.latency_budget);
+  to_cxx_qos(cxx_qos.liveliness, dds_qos.liveliness);
+  to_cxx_qos(cxx_qos.reliability, dds_qos.reliability);
+  to_cxx_qos(cxx_qos.destination_order, dds_qos.destination_order);
+  to_cxx_qos(cxx_qos.history, dds_qos.history);
+  to_cxx_qos(cxx_qos.resource_limits, dds_qos.resource_limits);
+  to_cxx_qos(cxx_qos.user_data, dds_qos.user_data);
+  to_cxx_qos(cxx_qos.ownership, dds_qos.ownership);
+  to_cxx_qos(cxx_qos.time_based_filter, dds_qos.time_based_filter);
+  to_cxx_qos(cxx_qos.reader_data_lifecycle, dds_qos.reader_data_lifecycle);
+  to_cxx_qos(cxx_qos.representation, dds_qos.representation);
+  to_cxx_qos(cxx_qos.type_consistency, dds_qos.type_consistency);
+}
+
+void to_dds_qos(DDS::PublisherQos& dds_qos, const Rust_OpenDDS::PublisherQos& cxx_qos)
+{
+  to_dds_qos(dds_qos.presentation, cxx_qos.presentation);
+  to_dds_qos(dds_qos.partition, cxx_qos.partition);
+  to_dds_qos(dds_qos.group_data, cxx_qos.group_data);
+  to_dds_qos(dds_qos.entity_factory, cxx_qos.entity_factory);
+}
+
+void to_cxx_qos(Rust_OpenDDS::PublisherQos& cxx_qos, const DDS::PublisherQos& dds_qos)
+{
+  to_cxx_qos(cxx_qos.presentation, dds_qos.presentation);
+  to_cxx_qos(cxx_qos.partition, dds_qos.partition);
+  to_cxx_qos(cxx_qos.group_data, dds_qos.group_data);
+  to_cxx_qos(cxx_qos.entity_factory, dds_qos.entity_factory);
+}
+
+void to_dds_qos(DDS::DataWriterQos& dds_qos, const Rust_OpenDDS::DataWriterQos& cxx_qos)
+{
+  to_dds_qos(dds_qos.durability, cxx_qos.durability);
+  to_dds_qos(dds_qos.durability_service, cxx_qos.durability_service);
+  to_dds_qos(dds_qos.deadline, cxx_qos.deadline);
+  to_dds_qos(dds_qos.latency_budget, cxx_qos.latency_budget);
+  to_dds_qos(dds_qos.liveliness, cxx_qos.liveliness);
+  to_dds_qos(dds_qos.reliability, cxx_qos.reliability);
+  to_dds_qos(dds_qos.destination_order, cxx_qos.destination_order);
+  to_dds_qos(dds_qos.history, cxx_qos.history);
+  to_dds_qos(dds_qos.resource_limits, cxx_qos.resource_limits);
+  to_dds_qos(dds_qos.transport_priority, cxx_qos.transport_priority);
+  to_dds_qos(dds_qos.lifespan, cxx_qos.lifespan);
+  to_dds_qos(dds_qos.user_data, cxx_qos.user_data);
+  to_dds_qos(dds_qos.ownership, cxx_qos.ownership);
+  to_dds_qos(dds_qos.ownership_strength, cxx_qos.ownership_strength);
+  to_dds_qos(dds_qos.writer_data_lifecycle, cxx_qos.writer_data_lifecycle);
+  to_dds_qos(dds_qos.representation, cxx_qos.representation);
+}
+
+void to_cxx_qos(Rust_OpenDDS::DataWriterQos& cxx_qos, const DDS::DataWriterQos& dds_qos)
+{
+  to_cxx_qos(cxx_qos.durability, dds_qos.durability);
+  to_cxx_qos(cxx_qos.durability_service, dds_qos.durability_service);
+  to_cxx_qos(cxx_qos.deadline, dds_qos.deadline);
+  to_cxx_qos(cxx_qos.latency_budget, dds_qos.latency_budget);
+  to_cxx_qos(cxx_qos.liveliness, dds_qos.liveliness);
+  to_cxx_qos(cxx_qos.reliability, dds_qos.reliability);
+  to_cxx_qos(cxx_qos.destination_order, dds_qos.destination_order);
+  to_cxx_qos(cxx_qos.history, dds_qos.history);
+  to_cxx_qos(cxx_qos.resource_limits, dds_qos.resource_limits);
+  to_cxx_qos(cxx_qos.transport_priority, dds_qos.transport_priority);
+  to_cxx_qos(cxx_qos.lifespan, dds_qos.lifespan);
+  to_cxx_qos(cxx_qos.user_data, dds_qos.user_data);
+  to_cxx_qos(cxx_qos.ownership, dds_qos.ownership);
+  to_cxx_qos(cxx_qos.ownership_strength, dds_qos.ownership_strength);
+  to_cxx_qos(cxx_qos.writer_data_lifecycle, dds_qos.writer_data_lifecycle);
   to_cxx_qos(cxx_qos.representation, dds_qos.representation);
 }
