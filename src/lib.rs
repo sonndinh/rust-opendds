@@ -380,28 +380,41 @@ pub mod ffi {
 
         type DomainParticipantVar;
         type SubscriberVar;
+        type DataReaderVar;
         type TopicVar;
         type DataWriterInfo;
 
         fn initialize(argc: i32, argv: Vec<String>);
         fn load(lib_path: String);
 
+        // Domain participant
         fn get_default_participant_qos(qos: &mut DomainParticipantQos) -> ReturnCode_t;
         fn create_participant(domain_id: i32, qos: &DomainParticipantQos, mask: StatusMask) -> UniquePtr<DomainParticipantVar>;
         fn delete_participant(dp: UniquePtr<DomainParticipantVar>);
 
+        // Topic
         fn get_default_topic_qos(dp: &UniquePtr<DomainParticipantVar>, qos: &mut TopicQos) -> ReturnCode_t;
         fn create_topic(dp: &UniquePtr<DomainParticipantVar>, topic_name: String, type_name: String, qos: &TopicQos, mask: StatusMask) -> UniquePtr<TopicVar>;
 
+        // Subscriber
         fn get_default_subscriber_qos(dp: &UniquePtr<DomainParticipantVar>, qos: &mut SubscriberQos) -> ReturnCode_t;
         fn create_subscriber(dp: &UniquePtr<DomainParticipantVar>, qos: &SubscriberQos, mask: StatusMask) -> UniquePtr<SubscriberVar>;
 
-        fn subscribe(dp: &UniquePtr<DomainParticipantVar>, topic_name: String,
-                     type_name: String, cb_fn: fn(si: SampleInfo, sample: String));
+        // Data reader
+        fn get_default_datareader_qos(sub: &UniquePtr<SubscriberVar>, qos: &mut DataReaderQos) -> ReturnCode_t;
+        fn create_datareader(sub: &UniquePtr<SubscriberVar>, topic: &UniquePtr<TopicVar>,
+                             qos: &DataReaderQos, mask: StatusMask) -> UniquePtr<DataReaderVar>;
+        fn set_listener(dr: &UniquePtr<DataReaderVar>, cb_fn: fn(si: SampleInfo, sample: String),
+                        mask: StatusMask, dp: &UniquePtr<DomainParticipantVar>, type_name: String) -> ReturnCode_t;
 
+        // TODO: Publisher
+
+        // TODO: Data writer
         fn create_datawriter(dp: &UniquePtr<DomainParticipantVar>, topic_name: String, type_name: String) -> UniquePtr<DataWriterInfo>;
-        fn wait_for_readers(dwi: &UniquePtr<DataWriterInfo>);
         fn write(dwi: &UniquePtr<DataWriterInfo>, sample: String, instance_handle: i32);
+
+        // Invoked by writer
+        fn wait_for_readers(dwi: &UniquePtr<DataWriterInfo>);
     }
 }
 

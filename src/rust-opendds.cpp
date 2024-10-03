@@ -151,12 +151,12 @@ ReturnCode_t get_default_subscriber_qos(const std::unique_ptr<DDS::DomainPartici
 std::unique_ptr<DDS::Subscriber_var>
 create_subscriber(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, const SubscriberQos& qos, StatusMask mask)
 {
-  DDS::SubscriberQos sub_qos;
-  to_dds_qos(sub_qos, qos);
+  DDS::SubscriberQos dds_qos;
+  to_dds_qos(dds_qos, qos);
   DDS::DomainParticipant_var& dp = *dp_ptr;
-  DDS::Subscriber_var sub = dp->create_subscriber(sub_qos, 0, mask.value);
+  DDS::Subscriber_var sub = dp->create_subscriber(dds_qos, 0, mask.value);
   if (!sub) {
-    throw std::runtime_error("create_subscriber: create_subscriber failed");
+    throw std::runtime_error("create_subscriber: create subscriber failed");
   }
 
   // TODO: free the _var object
@@ -165,46 +165,61 @@ create_subscriber(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, con
   return ret;
 }
 
-void subscribe(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, rust::String topic_name,
-               rust::String type_name, rust::Fn<void(SampleInfo, rust::String)> cb_fn)
+ReturnCode_t get_default_datareader_qos(const std::unique_ptr<DDS::Subscriber_var>& sub_ptr, DataReaderQos& qos)
 {
-  DDS::DomainParticipant_var& dp = *dp_ptr;
-  OpenDDS::DCPS::TypeSupport* ts = Registered_Data_Types->lookup(dp, type_name.c_str());
-  if (!ts) {
-    ts = Registered_Data_Types->lookup(0, type_name.c_str());
-    if (!ts) {
-      throw std::runtime_error(std::string("subscribe: type ") + type_name.c_str() + " is not registered");
-    }
-    Registered_Data_Types->register_type(dp, type_name.c_str(), ts);
-  }
-
-  DDS::Topic_var topic_var = dp->create_topic(topic_name.c_str(), type_name.c_str(),
-                                              TOPIC_QOS_DEFAULT, 0, 0);
-  DDS::TopicDescription_var topic = DDS::TopicDescription::_duplicate(topic_var);
-  if (!topic) {
-    throw std::runtime_error("subscribe: create topic failed");
-  }
-
-  const DDS::Subscriber_var sub = dp->create_subscriber(SUBSCRIBER_QOS_DEFAULT, 0, 0);
+  DDS::Subscriber_var& sub = *sub_ptr;
   if (!sub) {
-    throw std::runtime_error("subscribe: create_subscriber failed");
+    throw std::runtime_error("get_default_datareader_qos: subscriber is nil!");
   }
 
-  DDS::DataReaderQos dr_qos;
-  sub->get_default_datareader_qos(dr_qos);
-  DataReaderListenerImpl* const drli = new DataReaderListenerImpl(ts, cb_fn);
-  const DDS::DataReaderListener_var listen(drli);
-
-  DDS::DataReader_var dr = sub->create_datareader(topic, dr_qos, listen, DDS::DATA_AVAILABLE_STATUS);
-  if (!dr) {
-    throw std::runtime_error("subscribe: create_datareader failed");
+  DDS::DataReaderQos dds_qos;
+  const DDS::ReturnCode_t rc = sub->get_default_datareader_qos(dds_qos);
+  ReturnCode_t ret;
+  ret.value = rc;
+  if (rc == DDS::RETCODE_OK) {
+    to_cxx_qos(qos, dds_qos);
   }
-  ACE_DEBUG((LM_DEBUG, "C++: Rust_OpenDDS::subscribe: subscribe topic '%C' with type '%C'\n",
-             topic_name.c_str(), type_name.c_str()));
+  return ret;
 }
 
-std::unique_ptr<DataWriterInfo> create_datawriter(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
-                                                  rust::String topic_name, rust::String type_name)
+std::unique_ptr<DDS::DataReader_var>
+create_datareader(const std::unique_ptr<DDS::Subscriber_var>& sub_ptr,
+                  const std::unique_ptr<DDS::Topic_var>& topic_ptr,
+                  const DataReaderQos& qos, StatusMask mask)
+{
+  DDS::DataReaderQos dds_qos;
+  to_dds_qos(dds_qos, qos);
+  DDS::Subscriber_var& sub = *sub_ptr;
+  DDS::Topic_var& topic = *topic_ptr;
+
+  DDS::DataReader_var dr = sub->create_datareader(topic, dds_qos, 0, mask.value);
+  if (!dr) {
+    throw std::runtime_error("create_datareader: create data reader failed!");
+  }
+
+  // TODO: free the _var object
+  std::unique_ptr<DDS::DataReader_var> ret(new DDS::DataReader_var);
+  *ret = dr._retn();
+  return ret;
+}
+
+ReturnCode_t
+set_listener(const std::unique_ptr<DDS::DataReader_var>& dr_ptr,
+             rust::Fn<void(SampleInfo, rust::String)> cb_fn, StatusMask mask,
+             const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, rust::String type_name)
+{
+  OpenDDS::DCPS::TypeSupport* ts = Registered_Data_Types->lookup(*dp_ptr, type_name.c_str());
+  DDS::DataReaderListener_var listener(new DataReaderListenerImpl(ts, cb_fn));
+
+  DDS::DataReader_var& dr = *dr_ptr;
+  const DDS::ReturnCode_t rc = dr->set_listener(listener, mask.value);
+  ReturnCode_t ret = { .value = rc};
+  return ret;
+}
+
+std::unique_ptr<DataWriterInfo>
+create_datawriter(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
+                  rust::String topic_name, rust::String type_name)
 {
   DDS::DomainParticipant_var& dp = *dp_ptr;
   OpenDDS::DCPS::TypeSupport* ts = Registered_Data_Types->lookup(dp, type_name.c_str());
