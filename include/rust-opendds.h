@@ -15,13 +15,18 @@ struct DomainParticipantQos;
 struct TopicQos;
 struct SubscriberQos;
 struct DataReaderQos;
+struct PublisherQos;
+struct DataWriterQos;
 struct StatusMask;
 struct ReturnCode_t;
+struct InstanceHandle_t;
 
 using DomainParticipantVar = DDS::DomainParticipant_var;
 using TopicVar = DDS::Topic_var;
 using SubscriberVar = DDS::Subscriber_var;
 using DataReaderVar = DDS::DataReader_var;
+using PublisherVar = DDS::Publisher_var;
+using DataWriterVar = DDS::DataWriter_var;
 
 void initialize(int argc, rust::Vec<rust::String> argv);
 void load(rust::String lib_path);
@@ -59,22 +64,32 @@ set_listener(const std::unique_ptr<DDS::DataReader_var>& dr_ptr,
              rust::Fn<void(SampleInfo, rust::String)> cb_fn, StatusMask mask,
              const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, rust::String type_name);
 
-struct DataWriterInfo {
-  DataWriterInfo() : dw_ptr(0), ts_ptr(0) {}
+ReturnCode_t
+get_default_publisher_qos(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, PublisherQos& qos);
 
-  DDS::DataWriter* dw_ptr;
-  OpenDDS::DCPS::TypeSupport* ts_ptr;
-};
+std::unique_ptr<DDS::Publisher_var>
+create_publisher(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr, const PublisherQos& qos, StatusMask mask);
 
-std::unique_ptr<DataWriterInfo>
-create_datawriter(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
-                  rust::String topic_name, rust::String type_name);
+ReturnCode_t
+get_default_datawriter_qos(const std::unique_ptr<DDS::Publisher_var>& pub_ptr, DataWriterQos& qos);
 
-void write(const std::unique_ptr<DataWriterInfo>& dwi_ptr, rust::String sample,
-           DDS::InstanceHandle_t instance = DDS::HANDLE_NIL);
+std::unique_ptr<DDS::DataWriter_var>
+create_datawriter(const std::unique_ptr<DDS::Publisher_var>& pub_ptr,
+                  const std::unique_ptr<DDS::Topic_var>& topic_ptr,
+                  const DataWriterQos& qos, StatusMask mask);
+
+InstanceHandle_t
+register_instance(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
+                  const std::unique_ptr<DDS::DataWriter_var>& dw_ptr,
+                  rust::String type_name, rust::String instance);
+
+ReturnCode_t
+write(const std::unique_ptr<DDS::DomainParticipant_var>& dp_ptr,
+      const std::unique_ptr<DDS::DataWriter_var>& dw_ptr,
+      rust::String type_name, rust::String sample, InstanceHandle_t instance_handle);
 
 // Invoked by writer to wait for readers to join
-void wait_for_readers(const std::unique_ptr<DataWriterInfo>& dwi_ptr);
+void wait_for_readers(const std::unique_ptr<DDS::DataWriter_var>& dw_ptr);
 }
 
 #endif

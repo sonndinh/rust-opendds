@@ -183,6 +183,7 @@ pub mod ffi {
         value: Vec<i16>, // DDS::DataRepresentationIdSeq
     }
 
+    #[derive(Default)]
     struct TopicQos {
         topic_data: TopicDataQosPolicy,
         durability: DurabilityQosPolicy,
@@ -208,6 +209,7 @@ pub mod ffi {
         autodispose_unregistered_instances: bool,
     }
 
+    #[derive(Default)]
     struct DataWriterQos {
         durability: DurabilityQosPolicy,
         durability_service: DurabilityServiceQosPolicy,
@@ -250,6 +252,7 @@ pub mod ffi {
         autoenable_created_entities: bool,
     }
 
+    #[derive(Default)]
     struct PublisherQos {
         presentation: PresentationQosPolicy,
         partition: PartitionQosPolicy,
@@ -275,6 +278,7 @@ pub mod ffi {
         force_type_validation: bool,
     }
 
+    #[derive(Default)]
     struct DataReaderQos {
         durability: DurabilityQosPolicy,
         deadline: DeadlineQosPolicy,
@@ -381,8 +385,9 @@ pub mod ffi {
         type DomainParticipantVar;
         type SubscriberVar;
         type DataReaderVar;
+        type PublisherVar;
+        type DataWriterVar;
         type TopicVar;
-        type DataWriterInfo;
 
         fn initialize(argc: i32, argv: Vec<String>);
         fn load(lib_path: String);
@@ -407,14 +412,20 @@ pub mod ffi {
         fn set_listener(dr: &UniquePtr<DataReaderVar>, cb_fn: fn(si: SampleInfo, sample: String),
                         mask: StatusMask, dp: &UniquePtr<DomainParticipantVar>, type_name: String) -> ReturnCode_t;
 
-        // TODO: Publisher
+        // Publisher
+        fn get_default_publisher_qos(dp: &UniquePtr<DomainParticipantVar>, qos: &mut PublisherQos) -> ReturnCode_t;
+        fn create_publisher(dp: &UniquePtr<DomainParticipantVar>, qos: &PublisherQos, mask: StatusMask) -> UniquePtr<PublisherVar>;
 
-        // TODO: Data writer
-        fn create_datawriter(dp: &UniquePtr<DomainParticipantVar>, topic_name: String, type_name: String) -> UniquePtr<DataWriterInfo>;
-        fn write(dwi: &UniquePtr<DataWriterInfo>, sample: String, instance_handle: i32);
+        // Data writer
+        fn get_default_datawriter_qos(publisher: &UniquePtr<PublisherVar>, qos: &mut DataWriterQos) -> ReturnCode_t;
+        fn create_datawriter(publisher: &UniquePtr<PublisherVar>, topic: &UniquePtr<TopicVar>,
+                             qos: &DataWriterQos, mask: StatusMask) -> UniquePtr<DataWriterVar>;
 
-        // Invoked by writer
-        fn wait_for_readers(dwi: &UniquePtr<DataWriterInfo>);
+        fn register_instance(dp: &UniquePtr<DomainParticipantVar>, dw: &UniquePtr<DataWriterVar>, type_name: String, instance: String) -> InstanceHandle_t;
+
+        fn write(dp: &UniquePtr<DomainParticipantVar>, dw: &UniquePtr<DataWriterVar>, type_name: String, sample: String, instance_handle: InstanceHandle_t) -> ReturnCode_t;
+
+        fn wait_for_readers(dw: &UniquePtr<DataWriterVar>);
     }
 }
 

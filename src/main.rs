@@ -59,6 +59,7 @@ fn main() {
                             "rtps_disc.ini".to_string()]);
     ffi::load("/Users/sonndinh/Codes/OpenDDS/examples/DCPS/Messenger_Imr/DDS_Messenger_Imr_Idl".to_string());
 
+    // Domain participant
     let mut part_qos: ffi::DomainParticipantQos = Default::default();
     let mut rc: ffi::ReturnCode_t = ffi::get_default_participant_qos(&mut part_qos);
     if rc.value != dds::RETCODE_OK {
@@ -67,23 +68,77 @@ fn main() {
 
     let dp = ffi::create_participant(domain_id, &part_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
 
+    // Topic
+    let mut topic_name = "My Topic";
+    let mut type_name = "Messenger::Message";
+    let mut topic_qos: ffi::TopicQos = Default::default();
+    rc = ffi::get_default_topic_qos(&dp, &mut topic_qos);
+    if rc.value != dds::RETCODE_OK {
+        return;
+    }
+
+    let topic = ffi::create_topic(&dp, topic_name.to_string(), type_name.to_string(), &topic_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
+
+    // Subscriber
     let mut sub_qos: ffi::SubscriberQos = Default::default();
     rc = ffi::get_default_subscriber_qos(&dp, &mut sub_qos);
     if rc.value != dds::RETCODE_OK {
         return;
     }
 
-    // Not used now, just for testing.
-    let _sub = ffi::create_subscriber(&dp, &sub_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
+    let sub = ffi::create_subscriber(&dp, &sub_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
+
+    // Data reader
+    let mut dr_qos: ffi::DataReaderQos = Default:: default();
+    rc = ffi::get_default_datareader_qos(&sub, &mut dr_qos);
+    if rc.value != DDS::RETCODE_OK {
+        return;
+    }
+
+    let dr = ffi::create_datareader(&sub, &topic, &dr_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
 
     let cb: fn(ffi::SampleInfo, String) = rust_callback;
-    ffi::subscribe(&dp, "topic".to_string(), "Messenger::Message".to_string(), cb);
+    ffi::set_listener(&dr, cb, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK }, &dp, type_name);
 
-    let dwi = ffi::create_datawriter(&dp, "topic".to_string(), "Messenger::Message".to_string());
-    ffi::wait_for_readers(&dwi);
+    //let cb: fn(ffi::SampleInfo, String) = rust_callback;
+    //ffi::subscribe(&dp, "topic".to_string(), "Messenger::Message".to_string(), cb);
+
+    // Publisher
+    let mut pub_qos: ffi::PublisherQos = Default::default();
+    rc = ffi::get_default_publisher_qos(&dp, &mut pub_qos);
+    if rc.value != dds::RETCODE_OK {
+        return;
+    }
+
+    let publisher = ffi::create_publisher(&dp, &pub_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
+
+    // Data writer
+    let mut dw_qos: ffi::DataWriterQos = Default::default();
+    rc = ffi::get_default_datawriter_qos(&publisher, &mut dw_qos);
+    if rc.value != DDS::RETCODE_OK {
+        return;
+    }
+
+    let dw = ffi::create_datawriter(&publisher, &topic, &dw_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
+
+    ffi::wait_for_readers(&dw);
+
+
+
+    //let dwi = ffi::create_datawriter(&dp, "topic".to_string(), "Messenger::Message".to_string());
+    //ffi::wait_for_readers(&dwi);
 
     let sample = r#"{ "from": "Alice", "subject": "Hello from Alice", "subject_id": 0, "text": "Wanna play soccer today", "count": 2 }"#;
-    ffi::write(&dwi, sample.to_string(), 0);
+
+    let instance_handle = ffi::register_instance(&dp, &dw, type_name.to_string(), sample.to_string());
+    // TODO: Check for nil handle
+    //if instance_handle.value == DDS::HANDLE_NIL
+
+    // TODO: This move the instance handle, so only 1 call to write can use it.
+    // Need to use reference instead.
+    rc = ffi::write(&dp, &dw, type_name.to_string(), sample.to_string(), instance_handle);
+
+    //ffi::write(&dwi, sample.to_string(), 0);
 
     // Wait for the reader to receive the samples
     thread::sleep(time::Duration::from_millis(3000));
