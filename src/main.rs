@@ -69,8 +69,8 @@ fn main() {
     let dp = ffi::create_participant(domain_id, &part_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
 
     // Topic
-    let mut topic_name = "My Topic";
-    let mut type_name = "Messenger::Message";
+    let topic_name = "My Topic";
+    let type_name = "Messenger::Message";
     let mut topic_qos: ffi::TopicQos = Default::default();
     rc = ffi::get_default_topic_qos(&dp, &mut topic_qos);
     if rc.value != dds::RETCODE_OK {
@@ -91,14 +91,18 @@ fn main() {
     // Data reader
     let mut dr_qos: ffi::DataReaderQos = Default:: default();
     rc = ffi::get_default_datareader_qos(&sub, &mut dr_qos);
-    if rc.value != DDS::RETCODE_OK {
+    if rc.value != dds::RETCODE_OK {
         return;
     }
 
     let dr = ffi::create_datareader(&sub, &topic, &dr_qos, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK });
 
     let cb: fn(ffi::SampleInfo, String) = rust_callback;
-    ffi::set_listener(&dr, cb, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK }, &dp, type_name);
+    rc = ffi::set_listener(&dr, cb, ffi::StatusMask { value: dds::DEFAULT_STATUS_MASK }, &dp, type_name.to_string());
+    if rc.value != dds::RETCODE_OK {
+        println!("Rust: set_listener failed");
+        return;
+    }
 
     //let cb: fn(ffi::SampleInfo, String) = rust_callback;
     //ffi::subscribe(&dp, "topic".to_string(), "Messenger::Message".to_string(), cb);
@@ -115,7 +119,7 @@ fn main() {
     // Data writer
     let mut dw_qos: ffi::DataWriterQos = Default::default();
     rc = ffi::get_default_datawriter_qos(&publisher, &mut dw_qos);
-    if rc.value != DDS::RETCODE_OK {
+    if rc.value != dds::RETCODE_OK {
         return;
     }
 
@@ -137,6 +141,9 @@ fn main() {
     // TODO: This move the instance handle, so only 1 call to write can use it.
     // Need to use reference instead.
     rc = ffi::write(&dp, &dw, type_name.to_string(), sample.to_string(), instance_handle);
+    if rc.value != dds::RETCODE_OK {
+        return;
+    }
 
     //ffi::write(&dwi, sample.to_string(), 0);
 

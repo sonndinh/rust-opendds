@@ -69,6 +69,8 @@ pub mod ffi {
     }
 
     // Enable Rust application to pass custom Qos
+
+    #[derive(Default)]
     struct TopicDataQosPolicy {
         value: Vec<u8>, // DDS::OctetSeq
     }
@@ -90,10 +92,12 @@ pub mod ffi {
         PERSISTENT_DURABILITY_QOS,
     }
 
+    #[derive(Default)]
     struct DurabilityQosPolicy {
         kind: DurabilityQosPolicyKind,
     }
 
+    #[derive(Default)]
     struct Duration_t {
         sec: i32,
         nanosec: u32,
@@ -104,6 +108,7 @@ pub mod ffi {
         KEEP_ALL_HISTORY_QOS,
     }
 
+    #[derive(Default)]
     struct DurabilityServiceQosPolicy {
         service_cleanup_delay: Duration_t,
         history_kind: HistoryQosPolicyKind,
@@ -113,10 +118,12 @@ pub mod ffi {
         max_samples_per_instance: i32,
     }
 
+    #[derive(Default)]
     struct DeadlineQosPolicy {
         period: Duration_t,
     }
 
+    #[derive(Default)]
     struct LatencyBudgetQosPolicy {
         duration: Duration_t,
     }
@@ -127,6 +134,7 @@ pub mod ffi {
         MANUAL_BY_TOPIC_LIVELINESS_QOS,
     }
 
+    #[derive(Default)]
     struct LivelinessQosPolicy {
         kind: LivelinessQosPolicyKind,
         lease_duration: Duration_t,
@@ -137,6 +145,7 @@ pub mod ffi {
         RELIABLE_RELIABILITY_QOS,
     }
 
+    #[derive(Default)]
     struct ReliabilityQosPolicy {
         kind: ReliabilityQosPolicyKind,
         max_blocking_time: Duration_t,
@@ -147,25 +156,30 @@ pub mod ffi {
         BY_SOURCE_TIMESTAMP_DESTINATIONORDER_QOS,
     }
 
+    #[derive(Default)]
     struct DestinationOrderQosPolicy {
         kind: DestinationOrderQosPolicyKind,
     }
 
+    #[derive(Default)]
     struct HistoryQosPolicy {
         kind: HistoryQosPolicyKind,
         depth: i32,
     }
 
+    #[derive(Default)]
     struct ResourceLimitsQosPolicy {
         max_samples: i32,
         max_instances: i32,
         max_samples_per_instance: i32,
     }
 
+    #[derive(Default)]
     struct TransportPriorityQosPolicy {
         value: i32,
     }
 
+    #[derive(Default)]
     struct LifespanQosPolicy {
         duration: Duration_t,
     }
@@ -175,10 +189,12 @@ pub mod ffi {
         EXCLUSIVE_OWNERSHIP_QOS,
     }
 
+    #[derive(Default)]
     struct OwnershipQosPolicy {
         kind: OwnershipQosPolicyKind,
     }
 
+    #[derive(Default)]
     struct DataRepresentationQosPolicy {
         value: Vec<i16>, // DDS::DataRepresentationIdSeq
     }
@@ -201,10 +217,12 @@ pub mod ffi {
         representation: DataRepresentationQosPolicy,
     }
 
+    #[derive(Default)]
     struct OwnershipStrengthQosPolicy {
         value: i32,
     }
 
+    #[derive(Default)]
     struct WriterDataLifecycleQosPolicy {
         autodispose_unregistered_instances: bool,
     }
@@ -260,15 +278,18 @@ pub mod ffi {
         entity_factory: EntityFactoryQosPolicy,
     }
 
+    #[derive(Default)]
     struct TimeBasedFilterQosPolicy {
         minimum_separation: Duration_t,
     }
 
+    #[derive(Default)]
     struct ReaderDataLifecycleQosPolicy {
         autopurge_nowriter_samples_delay: Duration_t,
         autopurge_disposed_samples_delay: Duration_t,
     }
 
+    #[derive(Default)]
     struct TypeConsistencyEnforcementQosPolicy {
         kind: i16, // DDS::TypeConsistencyEnforcementQosPolicyKind_t
         ignore_sequence_bounds: bool,
@@ -433,5 +454,47 @@ impl Default for ffi::PresentationQosPolicyAccessScopeKind {
     fn default() -> Self
     {
         ffi::PresentationQosPolicyAccessScopeKind::INSTANCE_PRESENTATION_QOS
+    }
+}
+
+impl Default for ffi::DurabilityQosPolicyKind {
+    fn default() -> Self
+    {
+        ffi::DurabilityQosPolicyKind::VOLATILE_DURABILITY_QOS
+    }
+}
+
+impl Default for ffi::HistoryQosPolicyKind {
+    fn default() -> Self
+    {
+        ffi::HistoryQosPolicyKind::KEEP_LAST_HISTORY_QOS
+    }
+}
+
+impl Default for ffi::LivelinessQosPolicyKind {
+    fn default() -> Self
+    {
+        ffi::LivelinessQosPolicyKind::AUTOMATIC_LIVELINESS_QOS
+    }
+}
+
+impl Default for ffi::ReliabilityQosPolicyKind {
+    fn default() -> Self
+    {
+        ffi::ReliabilityQosPolicyKind::BEST_EFFORT_RELIABILITY_QOS
+    }
+}
+
+impl Default for ffi::DestinationOrderQosPolicyKind {
+    fn default() -> Self
+    {
+        ffi::DestinationOrderQosPolicyKind::BY_RECEPTION_TIMESTAMP_DESTINATIONORDER_QOS
+    }
+}
+
+impl Default for ffi::OwnershipQosPolicyKind {
+    fn default() -> Self
+    {
+        ffi::OwnershipQosPolicyKind::SHARED_OWNERSHIP_QOS
     }
 }
